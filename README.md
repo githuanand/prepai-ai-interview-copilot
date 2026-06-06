@@ -296,7 +296,7 @@ Built an AI-powered interview preparation platform using FastAPI and Google Gemi
 ### Anand Mohan Jha
 
 - GitHub: https://github.com/githuanand
-- LinkedIn: https://linkedin.com/in/anand-mohan-jha
+- LinkedIn: [https://linkedin.com/in/anand-mohan-jha](https://www.linkedin.com/in/anand-mohan-jha-55843924a/)
 
 ---
 
