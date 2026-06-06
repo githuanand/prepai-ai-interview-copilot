@@ -1,4 +1,23 @@
-.env
-venv/
+# Virtual Environments
+backend/venv/
+frontend/venv/
+
+# Environment Variables
+backend/.env
+
+# Uploads
+backend/uploads/
+
+# Cache
 __pycache__/
-uploads/
+*.pyc
+
+# Generated Files
+*.pdf
+
+# Streamlit
+.streamlit/
+
+# OS Files
+.DS_Store
+Thumbs.db
