@@ -3,7 +3,9 @@ from pydantic import BaseModel
 
 from app.services.gemini_service import model
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Question Generation"]
+)
 
 
 class SkillRequest(BaseModel):

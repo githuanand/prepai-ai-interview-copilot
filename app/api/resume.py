@@ -3,7 +3,9 @@ from app.services.resume_parser import extract_text_from_pdf
 from app.services.skill_extractor import extract_skills
 import os
 
-router = APIRouter()
+router = APIRouter(
+    tags=["Resume Analysis"]
+)
 
 UPLOAD_DIR = "uploads"
 

@@ -14,8 +14,13 @@ app.include_router(resume_router)
 app.include_router(question_router)
 app.include_router(evaluate_router)
 
-@app.get("/")
+@app.get(
+    "/",
+    tags=["System"],
+    summary="Health Check"
+)
 def home():
     return {
-        "status": "running"
+        "status": "running",
+        "application": "PrepAI"
     }
