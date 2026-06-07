@@ -1,7 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 
-from app.services.gemini_service import model
+from app.services.gemini_service import generate_response
 
 router = APIRouter(
     tags=["Answer Evaluation"]
@@ -17,24 +17,47 @@ class EvaluationRequest(BaseModel):
 def evaluate_answer(data: EvaluationRequest):
 
     prompt = f"""
-    You are a senior AI/ML interviewer.
+You are a senior AI/ML interviewer.
 
-    Question:
-    {data.question}
+Question:
+{data.question}
 
-    Candidate Answer:
-    {data.answer}
+Candidate Answer:
+{data.answer}
 
-    Evaluate the answer.
+Evaluate the answer professionally.
 
-    Return:
-    Score out of 10
-    Feedback
-    Ideal Answer
-    """
+Return in the following format:
 
-    response = model.generate_content(prompt)
+## Score
+(X/10)
 
-    return {
-        "evaluation": response.text
-    }
+## Strengths
+- Point 1
+- Point 2
+
+## Weaknesses
+- Point 1
+- Point 2
+
+## Suggestions for Improvement
+- Point 1
+- Point 2
+
+## Ideal Answer
+Provide an ideal interview-quality answer.
+"""
+
+    try:
+        evaluation = generate_response(prompt)
+
+        return {
+            "success": True,
+            "evaluation": evaluation
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Evaluation failed: {str(e)}"
+        )

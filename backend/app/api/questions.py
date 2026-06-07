@@ -1,31 +1,41 @@
-from fastapi import APIRouter
-from pydantic import BaseModel
+from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
 
-from app.services.gemini_service import model
+from app.services.gemini_service import generate_response
 
-router = APIRouter(
-    tags=["Question Generation"]
-)
+router = APIRouter(tags=["Question Generation"])
 
 
 class SkillRequest(BaseModel):
-    skills: list[str]
+    skills: list[str] = Field(..., min_length=1)
 
 
 @router.post("/generate-questions")
 def generate_questions(data: SkillRequest):
 
     prompt = f"""
-    Generate 10 technical interview questions.
+Generate 10 technical interview questions.
 
-    Skills:
-    {", ".join(data.skills)}
+Skills:
+{", ".join(data.skills)}
 
-    Return only questions.
-    """
+Requirements:
+- Questions only
+- No answers
+- Mix beginner, intermediate and advanced
+- Number each question
+"""
 
-    response = model.generate_content(prompt)
+    try:
+        result = generate_response(prompt)
 
-    return {
-        "questions": response.text
-    }
+        return {
+            "success": True,
+            "questions": result
+        }
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Question generation failed: {str(e)}"
+        )
