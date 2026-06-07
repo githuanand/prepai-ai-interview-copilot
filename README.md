@@ -49,7 +49,7 @@ AI-powered interview preparation platform that analyzes resumes, generates techn
 
 ### 📄 Resume_Analysis
 
-![Resume Analysis](docs/resume-analysis.png)
+![Resume Analysis](docs/resume_analysis.png)
 
 ---
 
