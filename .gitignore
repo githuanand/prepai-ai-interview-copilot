@@ -1,23 +1,49 @@
 # Virtual Environments
+
 backend/venv/
 frontend/venv/
+venv/
 
 # Environment Variables
+
+.env
 backend/.env
+frontend/.env
 
 # Uploads
+
 backend/uploads/
 
-# Cache
-__pycache__/
-*.pyc
+# Python Cache
 
-# Generated Files
-*.pdf
+**pycache**/
+*.py[cod]
+*$py.class
+
+# IDE
+
+.vscode/
+.idea/
 
 # Streamlit
+
 .streamlit/
 
 # OS Files
+
 .DS_Store
 Thumbs.db
+
+# Logs
+
+*.log
+
+# Generated Reports
+
+*.pdf
+
+# Build Files
+
+build/
+dist/
+*.egg-info/
