@@ -6,7 +6,7 @@ from app.api.evaluate import router as evaluate_router
 
 app = FastAPI(
     title="PrepAI - AI Interview Copilot",
-    description="AI-powered interview preparation platform using FastAPI and Google Gemini",
+    description="AI-powered interview preparation platform using FastAPI and Groq",
     version="1.0.0"
 )
 

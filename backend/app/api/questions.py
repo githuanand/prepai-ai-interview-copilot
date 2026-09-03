@@ -1,7 +1,8 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 
-from app.services.gemini_service import generate_response
+from app.services.groq_service import generate_response
+
 
 router = APIRouter(tags=["Question Generation"])
 
