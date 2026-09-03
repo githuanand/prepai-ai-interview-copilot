@@ -10,7 +10,7 @@ from report_generator import generate_report
 # CONFIG
 # ==========================================
 
-BACKEND_URL = "http://127.0.0.1:8000"
+BACKEND_URL = "https://prepai-ai-interview-copilot.onrender.com"
 
 st.set_page_config(
     page_title="PrepAI - AI Interview Copilot",
