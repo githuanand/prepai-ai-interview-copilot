@@ -1,7 +1,10 @@
-import streamlit as st
-import requests
 import re
+
+import requests
+import streamlit as st
+
 from report_generator import generate_report
+
 
 # ==========================================
 # CONFIG
@@ -10,48 +13,53 @@ from report_generator import generate_report
 BACKEND_URL = "http://127.0.0.1:8000"
 
 st.set_page_config(
-    page_title="PrepAI",
+    page_title="PrepAI - AI Interview Copilot",
     page_icon="🚀",
-    layout="wide"
+    layout="wide",
 )
+
 
 # ==========================================
 # CUSTOM CSS
 # ==========================================
 
-st.markdown("""
-<style>
+st.markdown(
+    """
+    <style>
 
-.main {
-    padding-top: 1rem;
-}
+    .main {
+        padding-top: 1rem;
+    }
 
-.skill-badge {
-    display:inline-block;
-    background:#0e7490;
-    color:white;
-    padding:8px 14px;
-    border-radius:15px;
-    margin:5px;
-    font-size:14px;
-    font-weight:600;
-}
+    .skill-badge {
+        display: inline-block;
+        background: #0e7490;
+        color: white;
+        padding: 8px 14px;
+        border-radius: 15px;
+        margin: 5px;
+        font-size: 14px;
+        font-weight: 600;
+    }
 
-.hero-box {
-    background: linear-gradient(90deg,#1e3a8a,#0f766e);
-    padding:25px;
-    border-radius:15px;
-    color:white;
-}
+    .hero-box {
+        background: linear-gradient(90deg, #1e3a8a, #0f766e);
+        padding: 25px;
+        border-radius: 15px;
+        color: white;
+    }
 
-.footer {
-    text-align:center;
-    padding:15px;
-    color:gray;
-}
+    .footer {
+        text-align: center;
+        padding: 15px;
+        color: gray;
+    }
 
-</style>
-""", unsafe_allow_html=True)
+    </style>
+    """,
+    unsafe_allow_html=True,
+)
+
 
 # ==========================================
 # SESSION STATE
@@ -59,6 +67,16 @@ st.markdown("""
 
 if "skills" not in st.session_state:
     st.session_state.skills = []
+
+if "resumes_analyzed" not in st.session_state:
+    st.session_state.resumes_analyzed = 0
+
+if "questions_generated" not in st.session_state:
+    st.session_state.questions_generated = 0
+
+if "answers_evaluated" not in st.session_state:
+    st.session_state.answers_evaluated = 0
+
 
 # ==========================================
 # SIDEBAR
@@ -71,8 +89,8 @@ page = st.sidebar.radio(
     [
         "📄 Resume Analysis",
         "🤖 Question Generation",
-        "📊 Answer Evaluation"
-    ]
+        "📊 Answer Evaluation",
+    ],
 )
 
 st.sidebar.markdown("---")
@@ -84,10 +102,11 @@ st.sidebar.info(
 Powered By:
 
 - FastAPI
-- Google Gemini
+- Groq AI
 - Streamlit
 """
 )
+
 
 # ==========================================
 # HEADER
@@ -95,23 +114,27 @@ Powered By:
 
 st.title("🚀 PrepAI - AI Interview Copilot")
 
-st.markdown("""
-<div class='hero-box'>
+st.markdown(
+    """
+    <div class="hero-box">
 
-### 🎯 Prepare Smarter with AI
+    ### 🎯 Prepare Smarter with AI
 
-Analyze resumes, generate interview questions,
-and receive AI-powered answer evaluations.
+    Analyze resumes, generate interview questions,
+    and receive AI-powered answer evaluations.
 
-Built using FastAPI + Gemini AI + Streamlit.
+    Built using FastAPI + Groq AI + Streamlit.
 
-</div>
-""", unsafe_allow_html=True)
+    </div>
+    """,
+    unsafe_allow_html=True,
+)
 
 st.write("")
 
+
 # ==========================================
-# KPI SECTION
+# REAL SESSION METRICS
 # ==========================================
 
 col1, col2, col3 = st.columns(3)
@@ -119,22 +142,23 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.metric(
         "Resumes Analyzed",
-        "100+"
+        st.session_state.resumes_analyzed,
     )
 
 with col2:
     st.metric(
         "Questions Generated",
-        "1000+"
+        st.session_state.questions_generated,
     )
 
 with col3:
     st.metric(
-        "AI Evaluation Accuracy",
-        "95%"
+        "Answers Evaluated",
+        st.session_state.answers_evaluated,
     )
 
 st.divider()
+
 
 # ==========================================
 # RESUME ANALYSIS
@@ -146,12 +170,15 @@ if page == "📄 Resume Analysis":
 
     uploaded_file = st.file_uploader(
         "Upload PDF Resume",
-        type=["pdf"]
+        type=["pdf"],
     )
 
     if uploaded_file:
 
-        if st.button("Analyze Resume"):
+        if st.button(
+            "Analyze Resume",
+            type="primary",
+        ):
 
             with st.spinner("Analyzing Resume..."):
 
@@ -159,57 +186,74 @@ if page == "📄 Resume Analysis":
                     "file": (
                         uploaded_file.name,
                         uploaded_file,
-                        "application/pdf"
+                        "application/pdf",
                     )
                 }
 
-                response = requests.post(
-                    f"{BACKEND_URL}/upload-resume",
-                    files=files
-                )
+                try:
 
-                if response.status_code == 200:
-
-                    data = response.json()
-
-                    st.session_state.skills = data["skills"]
-
-                    st.success(
-                        "Resume Analyzed Successfully"
+                    response = requests.post(
+                        f"{BACKEND_URL}/upload-resume",
+                        files=files,
+                        timeout=60,
                     )
 
-                    c1, c2 = st.columns(2)
+                    if response.status_code == 200:
 
-                    with c1:
-                        st.metric(
-                            "Characters",
-                            data["total_characters"]
+                        data = response.json()
+
+                        st.session_state.skills = data["skills"]
+
+                        st.session_state.resumes_analyzed += 1
+
+                        st.success(
+                            "Resume Analyzed Successfully"
                         )
 
-                    with c2:
-                        st.metric(
-                            "Skills Found",
-                            data["total_skills"]
+                        c1, c2 = st.columns(2)
+
+                        with c1:
+                            st.metric(
+                                "Characters",
+                                data["total_characters"],
+                            )
+
+                        with c2:
+                            st.metric(
+                                "Skills Found",
+                                data["total_skills"],
+                            )
+
+                        st.subheader("Detected Skills")
+
+                        badges = ""
+
+                        for skill in data["skills"]:
+
+                            badges += (
+                                f"<span class='skill-badge'>"
+                                f"{skill}"
+                                f"</span>"
+                            )
+
+                        st.markdown(
+                            badges,
+                            unsafe_allow_html=True,
                         )
 
-                    st.subheader(
-                        "Detected Skills"
+                    else:
+
+                        st.error(
+                            f"Failed to analyze resume "
+                            f"(HTTP {response.status_code})"
+                        )
+
+                except requests.exceptions.RequestException as error:
+
+                    st.error(
+                        f"Unable to connect to backend: {error}"
                     )
 
-                    badges = ""
-
-                    for skill in data["skills"]:
-                        badges += (
-                            f"<span class='skill-badge'>{skill}</span>"
-                        )
-
-                    st.markdown(
-                        badges,
-                        unsafe_allow_html=True
-                    )
-
-                else:
-                    st.error("Failed to analyze resume")
 
 # ==========================================
 # QUESTION GENERATION
@@ -237,48 +281,78 @@ elif page == "🤖 Question Generation":
 
     else:
 
-        default_skills = (
-            "Python, FastAPI, Machine Learning, RAG"
+        default_skills = ""
+
+        st.info(
+            "Analyze a resume first, or enter your skills manually."
         )
 
     skills = st.text_input(
         "Skills",
-        value=default_skills
+        value=default_skills,
+        placeholder="Python, FastAPI, SQL, Machine Learning",
     )
 
-    if st.button("Generate Questions"):
+    if st.button(
+        "Generate Questions",
+        type="primary",
+    ):
 
         skill_list = [
-            s.strip()
-            for s in skills.split(",")
+            skill.strip()
+            for skill in skills.split(",")
+            if skill.strip()
         ]
 
-        with st.spinner(
-            "Generating Questions..."
-        ):
+        if not skill_list:
 
-            response = requests.post(
-                f"{BACKEND_URL}/generate-questions",
-                json={
-                    "skills": skill_list
-                }
+            st.warning(
+                "Please enter at least one skill."
             )
 
-            if response.status_code == 200:
+        else:
 
-                st.success(
-                    "Questions Generated Successfully"
-                )
+            with st.spinner(
+                "Generating Questions..."
+            ):
 
-                st.markdown(
-                    response.json()["questions"]
-                )
+                try:
 
-            else:
+                    response = requests.post(
+                        f"{BACKEND_URL}/generate-questions",
+                        json={
+                            "skills": skill_list
+                        },
+                        timeout=120,
+                    )
 
-                st.error(
-                    "Failed to Generate Questions"
-                )
+                    if response.status_code == 200:
+
+                        data = response.json()
+
+                        st.session_state.questions_generated += 1
+
+                        st.success(
+                            "Questions Generated Successfully"
+                        )
+
+                        st.markdown(
+                            data["questions"]
+                        )
+
+                    else:
+
+                        st.error(
+                            f"Failed to generate questions "
+                            f"(HTTP {response.status_code})"
+                        )
+
+                except requests.exceptions.RequestException as error:
+
+                    st.error(
+                        f"Unable to connect to backend: {error}"
+                    )
+
 
 # ==========================================
 # ANSWER EVALUATION
@@ -290,96 +364,143 @@ elif page == "📊 Answer Evaluation":
 
     question = st.text_area(
         "Interview Question",
-        height=120
+        height=120,
+        placeholder="Enter the interview question...",
     )
 
     answer = st.text_area(
         "Your Answer",
-        height=220
+        height=220,
+        placeholder="Enter your answer...",
     )
 
-    if st.button("Evaluate Answer"):
+    if st.button(
+        "Evaluate Answer",
+        type="primary",
+    ):
 
-        with st.spinner(
-            "Evaluating Answer..."
-        ):
+        if not question.strip():
 
-            response = requests.post(
-                f"{BACKEND_URL}/evaluate-answer",
-                json={
-                    "question": question,
-                    "answer": answer
-                }
+            st.warning(
+                "Please enter the interview question."
             )
 
-            if response.status_code == 200:
+        elif not answer.strip():
 
-                evaluation = response.json()["evaluation"]
+            st.warning(
+                "Please enter your answer."
+            )
 
-                st.success(
-                    "Evaluation Completed"
-                )
+        else:
 
-                score = None
+            with st.spinner(
+                "Evaluating Answer..."
+            ):
 
-                match = re.search(
-                    r"(\d+)/10",
-                    evaluation
-                )
+                try:
 
-                if match:
-                    score = int(
-                        match.group(1)
+                    response = requests.post(
+                        f"{BACKEND_URL}/evaluate-answer",
+                        json={
+                            "question": question,
+                            "answer": answer,
+                        },
+                        timeout=120,
                     )
 
-                if score:
+                    if response.status_code == 200:
 
-                    st.subheader(
-                        "Interview Score"
+                        data = response.json()
+
+                        evaluation = data["evaluation"]
+
+                        st.session_state.answers_evaluated += 1
+
+                        st.success(
+                            "Evaluation Completed"
+                        )
+
+                        # ----------------------------------
+                        # Extract Score
+                        # ----------------------------------
+
+                        score = None
+
+                        match = re.search(
+                            r"\b(\d+)\s*/\s*10\b",
+                            evaluation,
+                        )
+
+                        if match:
+
+                            score = int(
+                                match.group(1)
+                            )
+
+                            if 0 <= score <= 10:
+
+                                st.subheader(
+                                    "Interview Score"
+                                )
+
+                                st.progress(
+                                    score / 10
+                                )
+
+                                st.metric(
+                                    "Score",
+                                    f"{score}/10",
+                                )
+
+                        # ----------------------------------
+                        # Display Evaluation
+                        # ----------------------------------
+
+                        st.markdown(
+                            evaluation
+                        )
+
+                        # ----------------------------------
+                        # Generate PDF Report
+                        # ----------------------------------
+
+                        report_path = (
+                            "PrepAI_Report.pdf"
+                        )
+
+                        generate_report(
+                            report_path,
+                            question,
+                            answer,
+                            evaluation,
+                            score if score is not None else 0,
+                        )
+
+                        with open(
+                            report_path,
+                            "rb",
+                        ) as pdf_file:
+
+                            st.download_button(
+                                label="📄 Download Interview Report",
+                                data=pdf_file,
+                                file_name="PrepAI_Report.pdf",
+                                mime="application/pdf",
+                            )
+
+                    else:
+
+                        st.error(
+                            f"Evaluation failed "
+                            f"(HTTP {response.status_code})"
+                        )
+
+                except requests.exceptions.RequestException as error:
+
+                    st.error(
+                        f"Unable to connect to backend: {error}"
                     )
 
-                    st.progress(
-                        score / 10
-                    )
-
-                    st.metric(
-                        "Score",
-                        f"{score}/10"
-                    )
-
-                st.markdown(
-                    evaluation
-                )
-
-                # ==========================================
-                # PDF REPORT GENERATION
-                # ==========================================
-
-                generate_report(
-                    "PrepAI_Report.pdf",
-                    question,
-                    answer,
-                    evaluation,
-                    score if score else 0
-                )
-
-                with open(
-                    "PrepAI_Report.pdf",
-                    "rb"
-                ) as pdf_file:
-
-                    st.download_button(
-                        label="📄 Download Interview Report",
-                        data=pdf_file,
-                        file_name="PrepAI_Report.pdf",
-                        mime="application/pdf"
-                    )
-
-            else:
-
-                st.error(
-                    "Evaluation Failed"
-                )
 
 # ==========================================
 # FOOTER
@@ -389,13 +510,13 @@ st.divider()
 
 st.markdown(
     """
-<div class='footer'>
+    <div class="footer">
 
-🚀 PrepAI | Built by Anand Mohan Jha
+    🚀 PrepAI | Built by Anand Mohan Jha
 
-FastAPI • Gemini AI • Streamlit
+    FastAPI • Groq AI • Streamlit
 
-</div>
-""",
-    unsafe_allow_html=True
+    </div>
+    """,
+    unsafe_allow_html=True,
 )
